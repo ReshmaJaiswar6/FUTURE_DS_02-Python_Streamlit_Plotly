@@ -34,9 +34,13 @@ st.markdown("---")
 st.subheader("Customer Drop-off Analysis")
 st.caption("Significant user loss occurs after initial engagement.")
 
+st.warning("Drop-off increases sharply after initial engagement → onboarding gap")
+
+
+
 stages = {
     "Total Users": len(df),
-    "Active Users": len(df[df['is_churned'] == 0])
+    "Active Users": len(df[df['is_churned'] == 0]),
     "Engaged Users": len(df[df['usage_count'] > df['usage_count'].median()]),
     "Retained Users": len(df[df['is_churned'] == 0])
 }
@@ -52,6 +56,7 @@ st.caption("Drop-off increases sharply after initial engagement → onboarding g
 # --------Churn by Plan Tier---------
 st.subheader("Churn by Plan Tier")
 st.caption("Churn rates vary across subscription plans.")
+st.warning("Certain plans show significantly higher churn risk")
 
 plan_churn = df.groupby('plan_tier_x')['is_churned'].mean() * 100
 plan_churn = plan_churn.reset_index()
@@ -66,11 +71,12 @@ fig = px.bar(
 
 st.plotly_chart(fig, use_container_width=True)
 
-st.caption("Certain plans show significantly higher churn risk")
+
 
 #  -------Customer Risk Segmentation-------------
 st.subheader("Customer Risk Segmentation")
 st.caption("Low engagement and high support needs indicate churn risk.")
+st.warning("Low usage + high support tickets = highest churn risk")
 
 fig = px.scatter(
     df,
@@ -85,12 +91,13 @@ fig.add_hline(y=df['ticket_count'].median(), line_dash="dash")
 
 st.plotly_chart(fig, use_container_width=True)
 
-st.caption("Low usage + high support tickets = highest churn risk")
+
 
 #  -----------Churn Timing Analysis------------
 
 st.subheader("Churn Timing Analysis")
 st.caption("Customers are most likely to churn early in their lifecycle.")
+st.warning("Most churn happens early in the lifecycle")
 
 fig = px.histogram(
     df[df['is_churned'] == 1],
@@ -100,11 +107,11 @@ fig = px.histogram(
 
 st.plotly_chart(fig, use_container_width=True)
 
-st.caption("Most churn happens early in the lifecycle")
-
 #-------Revenue Impact of Churn-------
 st.subheader("Revenue Impact of Churn")
 st.caption("Revenue loss is concentrated in specific customer segments.")
+st.warning("Revenue loss concentrated in specific plans")
+
 revenue_loss = df[df['is_churned'] == 1].groupby('plan_tier_x')['mrr_amount'].sum().reset_index()
 
 fig = px.bar(
@@ -116,8 +123,6 @@ fig = px.bar(
 )
 
 st.plotly_chart(fig, use_container_width=True)
-
-st.caption("Revenue loss concentrated in specific plans")
 
 #--------
 st.subheader("Key Insights")
