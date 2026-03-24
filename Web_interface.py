@@ -36,7 +36,7 @@ st.caption("Significant user loss occurs after initial engagement.")
 
 stages = {
     "Total Users": len(df),
-    "Active Users": len(df[df['usage_count'] > 0]),
+    "Active Users": len(df[df['is_churned'] == 0])
     "Engaged Users": len(df[df['usage_count'] > df['usage_count'].median()]),
     "Retained Users": len(df[df['is_churned'] == 0])
 }
