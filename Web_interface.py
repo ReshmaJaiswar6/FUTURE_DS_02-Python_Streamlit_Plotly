@@ -47,7 +47,7 @@ stages = {
 
 funnel_df = pd.DataFrame(list(stages.items()), columns=['Stage', 'Users'])
 
-fig = px.bar(funnel_df, x='Stage', y='Users', text='Users', color ='stages')
+fig = px.bar(funnel_df, x='Stage', y='Users', text='Users')
 st.plotly_chart(fig, use_container_width=True)
 
 st.caption("Drop-off increases sharply after initial engagement → onboarding gap")
