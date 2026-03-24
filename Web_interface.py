@@ -12,8 +12,10 @@ df['signup_date'] = pd.to_datetime(df['signup_date'])
 df['churn_date'] = pd.to_datetime(df['churn_date'])
 
 # ---- KPIs ----
-st.title("📊 SaaS Customer Churn Dashboard")
+st.title("SaaS Susbcribtion Customer Churn & Retention Insights")
 
+st.subheader("Overall Business Performance")
+st.caption("Churn is a key driver of revenue and customer retention.")
 col1, col2, col3, col4 = st.columns(4)
 
 churn_rate = round(df['is_churned'].mean() * 100, 2)
@@ -28,62 +30,96 @@ col4.metric("Revenue Lost", f"${revenue_loss}")
 
 st.markdown("---")
 
-# ---- Churn by Plan ----
-st.subheader("Churn Rate by Plan")
+#--------Customer Drop-off Analysis--------
+st.subheader("Customer Drop-off Analysis")
+st.caption("Significant user loss occurs after initial engagement.")
 
-plan_churn = df.groupby('plan_tier_x')['is_churned'].mean().reset_index()
-plan_churn['is_churned'] *= 100
+stages = {
+    "Total Users": len(df),
+    "Active Users": len(df[df['usage_count'] > 0]),
+    "Engaged Users": len(df[df['usage_count'] > df['usage_count'].median()]),
+    "Retained Users": len(df[df['is_churned'] == 0])
+}
 
-fig1 = px.bar(
+funnel_df = pd.DataFrame(list(stages.items()), columns=['Stage', 'Users'])
+
+fig = px.bar(funnel_df, x='Stage', y='Users', text='Users')
+st.plotly_chart(fig, use_container_width=True)
+
+st.caption("Drop-off increases sharply after initial engagement → onboarding gap")
+
+
+# --------Churn by Plan Tier---------
+st.subheader("Churn by Plan Tier")
+st.caption("Churn rates vary across subscription plans.")
+
+plan_churn = df.groupby('plan_tier_x')['is_churned'].mean() * 100
+plan_churn = plan_churn.reset_index()
+
+fig = px.bar(
     plan_churn,
-    x='plan_tier_x',
-    y='is_churned',
-    text='is_churned',
-    labels={'is_churned': 'Churn %', 'plan_tier_x': 'Plan'},
+    x='is_churned',
+    y='plan_tier_x',
+    orientation='h',
+    text='is_churned'
 )
 
-st.plotly_chart(fig1, use_container_width=True)
+st.plotly_chart(fig, use_container_width=True)
 
-# ---- Risk Segmentation ----
+st.caption("Certain plans show significantly higher churn risk")
+
+#  -------Customer Risk Segmentation-------------
 st.subheader("Customer Risk Segmentation")
+st.caption("Low engagement and high support needs indicate churn risk.")
 
-fig2 = px.scatter(
+fig = px.scatter(
     df,
     x='usage_count',
     y='ticket_count',
     color='is_churned',
-    hover_data=['plan_tier_x'],
+    opacity=0.6
 )
 
-st.plotly_chart(fig2, use_container_width=True)
+fig.add_vline(x=df['usage_count'].median(), line_dash="dash")
+fig.add_hline(y=df['ticket_count'].median(), line_dash="dash")
 
-# ---- Tenure Distribution ----
-st.subheader("When Customers Churn")
+st.plotly_chart(fig, use_container_width=True)
 
-fig3 = px.histogram(
+st.caption("Low usage + high support tickets = highest churn risk")
+
+#  -----------Churn Timing Analysis------------
+
+st.subheader("Churn Timing Analysis")
+st.caption("Customers are most likely to churn early in their lifecycle.")
+
+fig = px.histogram(
     df[df['is_churned'] == 1],
     x='tenure_days',
-    nbins=30,
+    nbins=30
 )
 
-st.plotly_chart(fig3, use_container_width=True)
+st.plotly_chart(fig, use_container_width=True)
 
-# ---- Revenue Loss ----
-st.subheader("Revenue Loss by Plan")
+st.caption("Most churn happens early in the lifecycle")
 
-rev_loss = df[df['is_churned'] == 1].groupby('plan_tier_x')['mrr_amount'].sum().reset_index()
+#-------Revenue Impact of Churn-------
+st.subheader("Revenue Impact of Churn")
+st.caption("Revenue loss is concentrated in specific customer segments.")
+revenue_loss = df[df['is_churned'] == 1].groupby('plan_tier_x')['mrr_amount'].sum().reset_index()
 
-fig4 = px.bar(
-    rev_loss,
-    x='plan_tier_x',
-    y='mrr_amount',
-    text='mrr_amount',
+fig = px.bar(
+    revenue_loss,
+    x='mrr_amount',
+    y='plan_tier_x',
+    orientation='h',
+    text='mrr_amount'
 )
 
-st.plotly_chart(fig4, use_container_width=True)
+st.plotly_chart(fig, use_container_width=True)
 
-# ---- Insights ----
-st.markdown("---")
+st.caption("Revenue loss concentrated in specific plans")
+
+#--------
 st.subheader("Key Insights")
 
 st.write("- High churn linked to low usage and high support tickets")
@@ -95,3 +131,11 @@ st.subheader("Recommended Actions")
 st.write("- Target low-usage users with onboarding nudges")
 st.write("- Improve support response for high-ticket users")
 st.write("- Focus retention efforts in early tenure phase")
+#---------------
+st.markdown("---")
+st.subheader("Final Dataset (Merged & Cleaned)")
+if st.checkbox("Show Dataset"):
+    st.dataframe(df, use_container_width=True)
+
+
+
