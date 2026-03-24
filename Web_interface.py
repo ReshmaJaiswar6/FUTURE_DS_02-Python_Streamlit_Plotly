@@ -121,7 +121,7 @@ fig = px.bar(
     y='plan_tier_x',
     orientation='h',
     text='mrr_amount',
-    color = ' plan_tier_x'
+    color ='plan_tier_x'
 )
 
 st.plotly_chart(fig, use_container_width=True)
