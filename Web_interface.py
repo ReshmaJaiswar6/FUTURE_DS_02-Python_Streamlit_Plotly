@@ -5,7 +5,7 @@ import plotly.express as px
 st.set_page_config(layout="wide")
 
 # Load data
-df = pd.read_csv("Merged_SaaS_Subs_cleaned_datta.csv")
+df = pd.read_csv("Merged_SaaS_Subs_cleaned_data.csv")
 
 # Basic cleaning
 df['signup_date'] = pd.to_datetime(df['signup_date'])
